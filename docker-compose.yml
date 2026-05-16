@@ -13,7 +13,48 @@ services:
 
   django:
     build:
+      context: .services:
+  nginx:
+    build:
+      context: ./nginx
+    container_name: nginx_cont
+    ports:
+      - "80:80"
+    networks:
+      - notes-app
+    restart: always
+    depends_on:
+      - django
+
+  django:
+    build:
       context: .
+    container_name: django_cont
+
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+      gunicorn notesapp.wsgi:application --bind 0.0.0.0:8000 --timeout 120"
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    restart: always
+
+    networks:
+      - notes-app
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/admin || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+networks:
+  notes-app:
     container_name: django_contcommand: sh -c "python manage.py migrate --noinput && gunicorn notesapp.wsgi --bind 0.0.0.0:8000 --timeout 120"
     ports:
       - "8000:8000"
