@@ -12,8 +12,7 @@ services:
       - django
 
   django:
-    build:
-      context: .
+    image: ritik2909/notes-app:latest
     container_name: django_cont
 
     command: >
